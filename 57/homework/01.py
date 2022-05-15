@@ -181,14 +181,18 @@ while True:
     componentStep()
     #调用shoot方法
     GameVar.hero.shoot()
-    
+
+    eventList = pygame.event.get()
+    for event in eventList:
+        if event.type == QUIT or event.type == KEYDOWN and event.key == K_a:
+            pygame.quit()
+            sys.exit()
+
     #刷新屏幕
     pygame.display.update()
+    pygame.event.pump()
     #延迟处理
     pygame.time.delay(15)
-    
-    
-    
-    
-    
-    
+
+
+
