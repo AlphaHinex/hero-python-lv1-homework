@@ -1,11 +1,14 @@
 #coding:utf-8
-class Father(object):
-    def __init__(self, name, color):
-        self.name = name
+class MobilePhone(object)
+    def __init__(self, color, model):
         self.color = color
+        self.model = model
+    def photograph(self):
+        print('拍照更清晰')
+class Vivo(MobilePhone)
+    def __init__(self, color, model):
+        MobilePhone.__init__(self, color, model)
+    def photograph(self):
+        print('逆光也清晰')
 
-
-class Lan(Father):
-    def __init__(self, name, color):
-        Father.__init__(self, name, color)
 
