@@ -27,6 +27,7 @@ while True:
     handleEvent()
     #刷新屏幕
     pygame.display.update()
+    pygame.event.pump()
     #延迟处理
     pygame.time.delay(15)
     
