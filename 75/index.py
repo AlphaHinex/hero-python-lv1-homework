@@ -1,6 +1,7 @@
 # coding:utf-8
 import pygame, sys, random, time, easygui
 from pygame.locals import *
+
 # 初始化pygame环境
 pygame.init()
 
@@ -12,16 +13,18 @@ canvas.fill((255, 255, 255))
 pygame.display.set_caption("飞机大战")
 bg = pygame.image.load("images/bg1.png")
 enemy1 = pygame.image.load("images/enemy1.png")
-enemy2 = pygame.image.load("images/enemy2.png")
+enemy2 = pygame.image.load("images/heroLife.png")
 enemy3 = pygame.image.load("images/enemy3.png")
 b = pygame.image.load("images/bullet1.png")
 h = pygame.image.load("images/hero.png")
-#开始游戏图片
-startgame=pygame.image.load("images/startGame.png")
-#logo图片
-logo=pygame.image.load("images/LOGO.png")
-#暂停图片
+over = pygame.image.load("images/over.png")
+# 开始游戏图片
+startgame = pygame.image.load("images/startGame.png")
+# logo图片
+logo = pygame.image.load("images/LOGO.png")
+# 暂停图片
 pause = pygame.image.load("images/game_pause_nor.png")
+
 
 # 添加时间间隔的方法
 def isActionTime(lastTime, interval):
@@ -29,6 +32,7 @@ def isActionTime(lastTime, interval):
         return True
     currentTime = time.time()
     return currentTime - lastTime >= interval
+
 
 # 定义Sky类
 class Sky():
@@ -40,10 +44,12 @@ class Sky():
         self.y1 = 0
         self.x2 = 0
         self.y2 = -self.height
+
     # 创建paint方法
     def paint(self):
         canvas.blit(self.img, (self.x1, self.y1))
         canvas.blit(self.img, (self.x2, self.y2))
+
     # 创建step方法
     def step(self):
         self.y1 = self.y1 + 1
@@ -52,6 +58,7 @@ class Sky():
             self.y1 = -self.height
         if self.y2 > self.height:
             self.y2 = -self.height
+
 
 # 定义父类FlyingObject
 class FlyingObject(object):
@@ -67,9 +74,11 @@ class FlyingObject(object):
         self.interval = 0.01
         # 添加删除属性
         self.canDelete = False
+
     # 定义paint方法
     def paint(self):
         canvas.blit(self.img, (self.x, self.y))
+
     # 定义step方法
     def step(self):
         # 判断是否到了移动的时间间隔
@@ -78,11 +87,13 @@ class FlyingObject(object):
         self.lastTime = time.time()
         # 控制移动速度
         self.y = self.y + 2
+
     # 定义hit方法判断两个对象之间是否发生碰撞
     def hit(self, component):
         c = component
         return c.x > self.x - c.width and c.x < self.x + self.width and \
                c.y > self.y - c.height and c.y < self.y + self.height
+
     # 定义bang方法处理对象之间碰撞后的处理
     def bang(self, bangsign):
         # 敌机和英雄机碰撞之后的处理
@@ -101,9 +112,11 @@ class FlyingObject(object):
                 self.canDelete = True
                 if hasattr(self, 'score'):
                     GameVar.score += self.score
-    # 定义outOfBounds方法判断对象是否越界
+                    # 定义outOfBounds方法判断对象是否越界
+
     def outOfBounds(self):
         return self.y > 650
+
 
 # 重构Enemy类
 class Enemy(FlyingObject):
@@ -112,6 +125,7 @@ class Enemy(FlyingObject):
         self.type = type
         self.score = score
 
+
 # 重构Hero类
 class Hero(FlyingObject):
     def __init__(self, x, y, width, height, life, img):
@@ -119,22 +133,27 @@ class Hero(FlyingObject):
         self.x = 480 / 2 - self.width / 2
         self.y = 650 - self.height - 30
         self.shootLastTime = 0
-        self.shootInterval = 0.3
+        self.shootInterval = 0.8
+
     def shoot(self):
         if not isActionTime(self.shootLastTime, self.shootInterval):
             return
         self.shootLastTime = time.time()
         GameVar.bullets.append(Bullet(self.x + self.width / 2 - 5, self.y - 10, 10, 10, 1, b))
 
+
 # 重构Bullet类
 class Bullet(FlyingObject):
     def __init__(self, x, y, width, height, life, img):
         FlyingObject.__init__(self, x, y, width, height, life, img)
+
     def step(self):
         self.y = self.y - 2
+
     # 重写outOfBounds方法判断子弹是否越界
     def outOfBounds(self):
         return self.y < -self.height
+
 
 # 创建componentEnter方法
 def componentEnter():
@@ -156,6 +175,7 @@ def componentEnter():
         if len(GameVar.enemies) == 0 or GameVar.enemies[0].type != 3:
             GameVar.enemies.insert(0, Enemy(x2, 0, 100, 153, 3, 10, 20, enemy3))
 
+
 # 创建画组件方法
 def componentPaint():
     # 判断是否到了飞行物重绘的时间
@@ -175,6 +195,7 @@ def componentPaint():
     fillText('SCORE:' + str(GameVar.score), (0, 0))
     fillText('LIFE:' + str(GameVar.heroes), (380, 0))
 
+
 # 创建组件移动的方法
 def componentStep():
     # 调用sky对象的step方法
@@ -184,6 +205,7 @@ def componentStep():
     # 使子弹移动
     for bullet in GameVar.bullets:
         bullet.step()
+
 
 # 创建删除组件的方法
 def componentDelete():
@@ -197,9 +219,11 @@ def componentDelete():
     if GameVar.hero.canDelete == True:
         GameVar.heroes -= 1
         if GameVar.heroes == 0:
-            easygui.msgbox('游戏结束')
+            # easygui.msgbox('游戏结束')
+            GameVar.state = "GAMEOVER"
         else:
             GameVar.hero = Hero(0, 0, 60, 75, 1, h)
+
 
 # 定义GameVar类
 class GameVar():
@@ -218,6 +242,34 @@ class GameVar():
     # 添加分数和生命值
     score = 0
     heroes = 3
+    # 控制我们整体项目里面的状态
+    state = "START"
+
+
+def CtrlState():
+    # 封装游戏中四个状态分别要做的事情
+    if GameVar.state == "START":
+        GameVar.sky.paint()  # 画背景
+        GameVar.sky.step()  # 让背景动起来
+        canvas.blit(logo, (-40, 200))  # 画logo图片
+        canvas.blit(startgame, (160, 400))  # 画"开始游戏"字样
+    elif GameVar.state == "RUNNING":
+        componentEnter()  # 产生敌飞机
+        componentPaint()  # 画出所有能画的
+        componentStep()  # 移动所有能移动的
+        componentDelete()  # 删除所有能删除的
+        checkHit()  # 碰撞检测
+        GameVar.hero.shoot()  # 发射子弹
+    elif GameVar.state == "PAUSE":
+        componentPaint()
+        GameVar.sky.step()
+        canvas.blit(pause, (200, 320))
+    elif GameVar.state == "GAMEOVER":
+        componentPaint()
+        GameVar.sky.step()
+        fillText("GAMEOVER", (160, 400))
+
+        # GameVar.state = "GAMEOVER"
 
 
 # 定义fillText方法
@@ -226,22 +278,31 @@ def fillText(text, position):
     newText = my_font.render(text, True, (255, 255, 255))
     canvas.blit(newText, position)
 
+
 # 创建游戏退出事件处理方法
 def handleEvent():
     for event in pygame.event.get():
         if event.type == pygame.QUIT or event.type == KEYDOWN and event.key == K_ESCAPE:
             pygame.quit()
             sys.exit()
+            # 判断是否点击了鼠标左键,如果是让游戏运行
+        if event.type == MOUSEBUTTONDOWN and event.button == 1:
+            if GameVar.state == "START":
+                GameVar.state = "RUNNING"
         # 英雄机跟随鼠标移动
         if event.type == MOUSEMOTION:
-            GameVar.hero.x = event.pos[0] - GameVar.hero.width / 2
-            GameVar.hero.y = event.pos[1] - GameVar.hero.height / 2
-            # 调用方法判断鼠标移入画布
+            if GameVar.state == "RUNNING":
+                GameVar.hero.x = event.pos[0] - GameVar.hero.width / 2
+                GameVar.hero.y = event.pos[1] - GameVar.hero.height / 2
+                # 调用方法判断鼠标移入画布
             if isMouseOver(event.pos[0], event.pos[1]):
-                print('鼠标移入事件')
+                if GameVar.state == "PAUSE":
+                    GameVar.state = "RUNNING"
             # 调用方法判断鼠标移出画布
             if isMouseOut(event.pos[0], event.pos[1]):
-                print('鼠标移出事件')
+                if GameVar.state == "RUNNING":
+                    GameVar.state = "PAUSE"
+
 
 # 创建方法判断鼠标移出画布
 def isMouseOut(x, y):
@@ -249,12 +310,15 @@ def isMouseOut(x, y):
         return True
     else:
         return False
+
+
 # 创建方法判断鼠标移入画布
 def isMouseOver(x, y):
     if x > 1 and x < 479 and y > 1 and y < 649:
         return True
     else:
         return False
+
 
 # 创建checkHit方法
 def checkHit():
@@ -272,9 +336,8 @@ def checkHit():
                 bullet.bang(0)
 
 
-
 while True:
-
+    CtrlState()
     # 刷新屏幕
     pygame.display.update()
     # 调用handleEvent方法
